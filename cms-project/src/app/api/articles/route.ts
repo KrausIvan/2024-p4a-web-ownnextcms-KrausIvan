@@ -48,7 +48,7 @@ export async function GET() {
 
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -58,8 +58,7 @@ export async function DELETE(
         );
     }
 
-    const { id } = params;
-
+    const { id } = await params;
     if (!id) {
         return NextResponse.json(
             { error: "Article id is required." },
@@ -94,7 +93,7 @@ export async function DELETE(
 
 export async function PUT(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -104,7 +103,7 @@ export async function PUT(
         );
     }
 
-    const id = params.id;
+    const { id } = await params;
     const formData = await req.formData();
     const title = formData.get("title")?.toString();
     const content = formData.get("content")?.toString();

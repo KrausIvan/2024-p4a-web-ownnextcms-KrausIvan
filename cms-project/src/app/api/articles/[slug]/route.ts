@@ -4,10 +4,13 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../auth/[...nextauth]/route";
 
 export async function GET(
-    req: NextRequest,
-    context: { params: Record<string, string> }
+    req: Request,
+    { params }: { params: Promise<{ slug: string }> }
 ) {
-    const slug = context.params.slug;
+    const { slug } = await params;
+    if (!slug) {
+        return NextResponse.json({ error: "Slug is required." }, { status: 400 });
+    }
 
     const article = await prisma.article.findUnique({
         where: { slug },
@@ -22,16 +25,19 @@ export async function GET(
 
 export async function DELETE(
     req: NextRequest,
-    context: { params: Record<string, string> }
+    { params }: { params: Promise<{ slug: string }> }
 ) {
     const session = await getServerSession(authOptions);
     if (!session) {
         return NextResponse.json({ error: "Unauthorized (not logged in)." }, { status: 401 });
     }
 
-    const slug = context.params.slug;
-    const article = await prisma.article.findUnique({ where: { slug } });
+    const { slug } = await params;
+    if (!slug) {
+        return NextResponse.json({ error: "Slug is required." }, { status: 400 });
+    }
 
+    const article = await prisma.article.findUnique({ where: { slug } });
     if (!article) {
         return NextResponse.json({ error: "Article not found." }, { status: 404 });
     }
@@ -46,9 +52,10 @@ export async function DELETE(
     return NextResponse.json({ message: "Article deleted successfully." });
 }
 
+
 export async function PUT(
     req: NextRequest,
-    context: { params: Record<string, string> }
+    { params }: { params: Promise<{ slug?: string }> }
 ) {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -73,9 +80,12 @@ export async function PUT(
         return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
     }
 
-    const slug = context.params.slug;
-    const article = await prisma.article.findUnique({ where: { slug } });
+    const { slug } = await params;
+    if (!slug) {
+        return NextResponse.json({ error: "Slug is required." }, { status: 400 });
+    }
 
+    const article = await prisma.article.findUnique({ where: { slug } });
     if (!article) {
         return NextResponse.json({ error: "Article not found." }, { status: 404 });
     }
