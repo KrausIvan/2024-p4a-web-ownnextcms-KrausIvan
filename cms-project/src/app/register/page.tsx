@@ -1,20 +1,23 @@
 "use client";
-import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { signIn } from "next-auth/react";
 
-export default function Register() {
+import "bootstrap/dist/css/bootstrap.min.css";
+import { Container, Row, Col, Card, Form, Button, Alert } from "react-bootstrap";
+
+export default function RegisterPage() {
     const [error, setError] = useState<string | null>(null);
 
     const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
-        const name = formData.get("username") as string;
+        const username = formData.get("username") as string;
         const email = formData.get("email") as string;
         const password = formData.get("password") as string;
 
         const response = await fetch("/api/register", {
             method: "POST",
-            body: JSON.stringify({ name, email, password }),
+            body: JSON.stringify({ name: username, email, password }),
             headers: { "Content-Type": "application/json" },
         });
 
@@ -27,23 +30,68 @@ export default function Register() {
     };
 
     return (
-        <div>
-            <form onSubmit={handleRegister}>
-                <h1>Register</h1>
-                {error && <p style={{color: "red"}}>{error}</p>}
-                <input type="text" name="username" placeholder="Username" required/>
-                <input type="email" name="email" placeholder="Email" required/>
-                <input type="password" name="password" placeholder="Password" required/>
-                <button type="submit">Register</button>
-            </form>
-            <button
-                onClick={() =>
-                    signIn("github", {callbackUrl: "/login?isNewUser=true"})
-                }
-            >
-                Register with GitHub
-            </button>
+        <Container style={{ maxWidth: "400px", marginTop: "50px" }}>
+            <Row>
+                <Col>
+                    <h1 className="text-center mb-4">Register</h1>
 
-        </div>
+                    {error && (
+                        <Alert variant="danger" className="text-center">
+                            {error}
+                        </Alert>
+                    )}
+
+                    <Card className="shadow-sm">
+                        <Card.Body>
+                            <Form onSubmit={handleRegister}>
+                                <Form.Group controlId="username" className="mb-3">
+                                    <Form.Label>Username</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="username"
+                                        placeholder="Username"
+                                        required
+                                    />
+                                </Form.Group>
+                                <Form.Group controlId="email" className="mb-3">
+                                    <Form.Label>Email</Form.Label>
+                                    <Form.Control
+                                        type="email"
+                                        name="email"
+                                        placeholder="Email"
+                                        required
+                                    />
+                                </Form.Group>
+                                <Form.Group controlId="password" className="mb-3">
+                                    <Form.Label>Password</Form.Label>
+                                    <Form.Control
+                                        type="password"
+                                        name="password"
+                                        placeholder="Password"
+                                        required
+                                    />
+                                </Form.Group>
+                                <Button type="submit" variant="primary" className="w-100">
+                                    Register
+                                </Button>
+                            </Form>
+                        </Card.Body>
+                    </Card>
+
+                    <div className="mt-3 text-center">
+                        <hr />
+                        <Button
+                            variant="dark"
+                            className="w-100"
+                            onClick={() =>
+                                signIn("github", { callbackUrl: "/login?isNewUser=true" })
+                            }
+                        >
+                            Register with GitHub
+                        </Button>
+                    </div>
+                </Col>
+            </Row>
+        </Container>
     );
 }
