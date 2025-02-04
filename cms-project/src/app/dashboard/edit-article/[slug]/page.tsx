@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../../../api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
@@ -7,7 +7,7 @@ import styles from "./EditArticlePage.module.scss";
 import EditArticleForm from "./EditArticleForm";
 
 interface EditArticlePageProps {
-    params: { slug: string };
+    params: Promise<{ slug: string }>;
 }
 
 export default async function EditArticlePage({ params }: EditArticlePageProps) {
@@ -17,7 +17,7 @@ export default async function EditArticlePage({ params }: EditArticlePageProps) 
     }
 
     const article = await prisma.article.findUnique({
-        where: { slug: params.slug },
+        where: { slug: (await params).slug },
         include: { categories: true, author: true },
     });
 

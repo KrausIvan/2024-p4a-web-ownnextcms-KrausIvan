@@ -5,12 +5,12 @@ import styles from "./ArticleDetail.module.scss";
 import { Metadata } from "next";
 
 interface ArticleDetailProps {
-    params: { slug: string };
+    params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: ArticleDetailProps): Promise<Metadata> {
     const article = await prisma.article.findUnique({
-        where: { slug: params.slug },
+        where: { slug: (await params).slug },
         include: {
             categories: true,
             author: true,
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: ArticleDetailProps): Promise<
 
 export default async function ArticleDetail({ params }: ArticleDetailProps) {
     const article = await prisma.article.findUnique({
-        where: { slug: params.slug },
+        where: { slug: (await params).slug },
         include: {
             categories: true,
             author: true,

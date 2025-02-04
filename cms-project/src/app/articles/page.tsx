@@ -1,21 +1,21 @@
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import styles from "./ArticlesPage.module.scss";
 import { Metadata } from "next";
 
 interface ArticlesPageProps {
-    searchParams: {
+    params: Promise<{
         query?: string;
         category?: string;
-    };
+    }>;
 }
 
-export async function generateMetadata({ searchParams }: ArticlesPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: ArticlesPageProps): Promise<Metadata> {
     let title = "Seznam článků | Moje Publikační Platforma";
     let description = "Vyhledejte a prohlédněte si veřejně dostupné články.";
-
+    const searchParams = await params;
     if (searchParams.query) {
         title = `Vyhledávání: ${searchParams.query} | Seznam článků`;
         description = `Výsledky vyhledávání pro "${searchParams.query}".`;
@@ -35,11 +35,13 @@ export async function generateMetadata({ searchParams }: ArticlesPageProps): Pro
     };
 }
 
-export default async function ArticlesPage({ searchParams }: ArticlesPageProps) {
+export default async function ArticlesPage({ params }: ArticlesPageProps) {
     const session = await getServerSession(authOptions);
     const categories = await prisma.category.findMany();
 
     const where: any = {};
+
+    const searchParams = await params
 
     if (searchParams.query) {
         where.OR = [
