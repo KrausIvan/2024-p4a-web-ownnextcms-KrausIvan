@@ -4,17 +4,17 @@ import { useRouter } from "next/navigation";
 import styles from "./DeleteArticleButton.module.scss";
 
 interface DeleteArticleButtonProps {
-    id: string;
+    slug: string;
 }
 
-export default function DeleteArticleButton({ id }: DeleteArticleButtonProps) {
+export default function DeleteArticleButton({ slug }: DeleteArticleButtonProps) {
     const router = useRouter();
     const [isDeleting, setIsDeleting] = useState(false);
 
     const handleDelete = async () => {
         if (!confirm("Opravdu chcete smazat tento článek?")) return;
         setIsDeleting(true);
-        const res = await fetch(`/api/articles/${id}`, { method: "DELETE" });
+        const res = await fetch(`/api/articles/${slug}`, { method: "DELETE" });
         if (res.ok) {
             router.refresh();
         } else {

@@ -25,11 +25,18 @@ export async function GET(
 
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: Promise<{ slug: string }> }
+    { params }: { params: Promise<{ slug?: string }> } // ✅ `slug?` místo `slug`
 ) {
     console.log("🔹 Awaiting params...");
-    const { slug } = await params;
+    const resolvedParams = await params;
+    console.log("📌 Resolved params:", resolvedParams);
 
+    if (!resolvedParams || !resolvedParams.slug) {
+        console.log("❌ Slug is missing in request params!");
+        return NextResponse.json({ error: "Slug is required." }, { status: 400 });
+    }
+
+    const { slug } = resolvedParams;
     console.log("🔹 DELETE request received for slug:", slug);
 
     const session = await getServerSession(authOptions);
@@ -38,16 +45,8 @@ export async function DELETE(
         return NextResponse.json({ error: "Unauthorized (not logged in)." }, { status: 401 });
     }
 
-    if (!slug) {
-        console.log("❌ Missing slug in request");
-        return NextResponse.json({ error: "Slug is required." }, { status: 400 });
-    }
-
     console.log("🔹 Checking if article exists in DB...");
-    const article = await prisma.article.findUnique({
-        where: { slug },
-        include: { categories: true },
-    });
+    const article = await prisma.article.findUnique({ where: { slug } });
 
     if (!article) {
         console.log("❌ Article not found in DB");
@@ -62,18 +61,13 @@ export async function DELETE(
         );
     }
 
-    console.log("🔹 Removing category references before deletion...");
-    await prisma.article.update({
-        where: { slug },
-        data: { categories: { set: [] } },
-    });
-
     console.log("🔹 Deleting article from DB...");
     await prisma.article.delete({ where: { slug } });
 
     console.log("✅ Article deleted successfully!");
     return NextResponse.json({ message: "Article deleted successfully." });
 }
+
 
 export async function PUT(
     req: NextRequest,

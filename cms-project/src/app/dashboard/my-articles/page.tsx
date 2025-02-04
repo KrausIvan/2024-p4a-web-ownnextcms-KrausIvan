@@ -47,11 +47,12 @@ export default async function MyArticlesPage() {
                             >
                                 Upravit
                             </Link>
-                            <DeleteArticleButton id={article.id} />
+                            <DeleteArticleButton slug={article.slug}/>
                         </div>
                     </li>
                 ))}
             </ul>
+
         </div>
     );
 }
